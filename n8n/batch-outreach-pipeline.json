@@ -1,0 +1,136 @@
+{
+  "name": "Playwright SCR - Batch Outreach Pipeline",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg1",
+              "name": "api_base",
+              "value": "http://host.docker.internal:8000",
+              "type": "string"
+            },
+            {
+              "id": "cfg2",
+              "name": "search_query",
+              "value": "стоматология",
+              "type": "string"
+            },
+            {
+              "id": "cfg3",
+              "name": "search_cities",
+              "value": "={{ [\"Казань\"] }}",
+              "type": "array"
+            },
+            {
+              "id": "cfg4",
+              "name": "sites_limit",
+              "value": 3,
+              "type": "number"
+            },
+            {
+              "id": "cfg5",
+              "name": "offer_description",
+              "value": "Помогаем стоматологиям получать больше заявок через SEO и контекстную рекламу.",
+              "type": "string"
+            },
+            {
+              "id": "cfg6",
+              "name": "sender_name",
+              "value": "Иван Петров",
+              "type": "string"
+            },
+            {
+              "id": "cfg7",
+              "name": "sender_company",
+              "value": "Dental Marketing",
+              "type": "string"
+            },
+            {
+              "id": "cfg8",
+              "name": "sender_phone",
+              "value": "+7 (999) 123-45-67",
+              "type": "string"
+            },
+            {
+              "id": "cfg9",
+              "name": "sender_email",
+              "value": "ivan@example.com",
+              "type": "string"
+            },
+            {
+              "id": "cfg10",
+              "name": "dry_run_submit",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.api_base }}/pipeline/batch",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"search_query\": {{ JSON.stringify($('Config').item.json.search_query) }},\n  \"search_cities\": {{ $('Config').item.json.search_cities }},\n  \"search_max_pages\": 1,\n  \"sites_limit\": {{ $('Config').item.json.sites_limit }},\n  \"scrape_status\": \"pending\",\n  \"offer_description\": {{ JSON.stringify($('Config').item.json.offer_description) }},\n  \"sender_name\": {{ JSON.stringify($('Config').item.json.sender_name) }},\n  \"sender_company\": {{ JSON.stringify($('Config').item.json.sender_company) }},\n  \"sender_phone\": {{ JSON.stringify($('Config').item.json.sender_phone) }},\n  \"sender_email\": {{ JSON.stringify($('Config').item.json.sender_email) }},\n  \"dry_run_submit\": {{ $('Config').item.json.dry_run_submit }},\n  \"headless\": true,\n  \"skip_enrich_if_done\": true,\n  \"auto_qualify\": true,\n  \"skip_unqualified\": true\n}",
+        "options": {
+          "timeout": 3600000
+        }
+      },
+      "id": "b1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Run Batch Pipeline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Run Batch Pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

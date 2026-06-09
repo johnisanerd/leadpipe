@@ -1,0 +1,198 @@
+{
+  "name": "Playwright SCR - Site Outreach (Step by Step)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "c1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 400]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg1",
+              "name": "api_base",
+              "value": "http://host.docker.internal:8000",
+              "type": "string"
+            },
+            {
+              "id": "cfg2",
+              "name": "site_id",
+              "value": "ЗАМЕНИТЕ-НА-UUID-САЙТА",
+              "type": "string"
+            },
+            {
+              "id": "cfg3",
+              "name": "offer_description",
+              "value": "Помогаем стоматологиям получать больше заявок через SEO.",
+              "type": "string"
+            },
+            {
+              "id": "cfg4",
+              "name": "sender_name",
+              "value": "Иван Петров",
+              "type": "string"
+            },
+            {
+              "id": "cfg5",
+              "name": "sender_company",
+              "value": "Dental Marketing",
+              "type": "string"
+            },
+            {
+              "id": "cfg6",
+              "name": "sender_phone",
+              "value": "+7 (999) 123-45-67",
+              "type": "string"
+            },
+            {
+              "id": "cfg7",
+              "name": "sender_email",
+              "value": "ivan@example.com",
+              "type": "string"
+            },
+            {
+              "id": "cfg8",
+              "name": "dry_run_submit",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.api_base }}/enrich/site/{{ $('Config').item.json.site_id }}?headless=true",
+        "options": { "timeout": 300000 }
+      },
+      "id": "c1b2c3d4-0003-4000-8000-000000000003",
+      "name": "1 Enrich",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.api_base }}/forms/collect/site/{{ $('Config').item.json.site_id }}?headless=true",
+        "options": { "timeout": 300000 }
+      },
+      "id": "c1b2c3d4-0004-4000-8000-000000000004",
+      "name": "2 Collect Form",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.api_base }}/outreach/generate/site/{{ $('Config').item.json.site_id }}?auto_qualify=true&skip_unqualified=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"offer_description\": {{ JSON.stringify($('Config').item.json.offer_description) }},\n  \"sender_name\": {{ JSON.stringify($('Config').item.json.sender_name) }},\n  \"sender_company\": {{ JSON.stringify($('Config').item.json.sender_company) }},\n  \"sender_phone\": {{ JSON.stringify($('Config').item.json.sender_phone) }},\n  \"sender_email\": {{ JSON.stringify($('Config').item.json.sender_email) }}\n}",
+        "options": { "timeout": 300000 }
+      },
+      "id": "c1b2c3d4-0005-4000-8000-000000000005",
+      "name": "3 Generate Outreach",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "done",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c1b2c3d4-0006-4000-8000-000000000006",
+      "name": "Outreach OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1200, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.api_base }}/outreach/submit/site/{{ $('Config').item.json.site_id }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sender_name\": {{ JSON.stringify($('Config').item.json.sender_name) }},\n  \"sender_phone\": {{ JSON.stringify($('Config').item.json.sender_phone) }},\n  \"sender_email\": {{ JSON.stringify($('Config').item.json.sender_email) }},\n  \"dry_run\": {{ $('Config').item.json.dry_run_submit }},\n  \"headless\": true\n}",
+        "options": { "timeout": 300000 }
+      },
+      "id": "c1b2c3d4-0007-4000-8000-000000000007",
+      "name": "4 Submit Form",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1440, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "skip1",
+              "name": "result",
+              "value": "skipped — site did not pass qualification",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c1b2c3d4-0008-4000-8000-000000000008",
+      "name": "Skipped",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1440, 520]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{ "node": "Config", "type": "main", "index": 0 }]]
+    },
+    "Config": {
+      "main": [[{ "node": "1 Enrich", "type": "main", "index": 0 }]]
+    },
+    "1 Enrich": {
+      "main": [[{ "node": "2 Collect Form", "type": "main", "index": 0 }]]
+    },
+    "2 Collect Form": {
+      "main": [[{ "node": "3 Generate Outreach", "type": "main", "index": 0 }]]
+    },
+    "3 Generate Outreach": {
+      "main": [[{ "node": "Outreach OK?", "type": "main", "index": 0 }]]
+    },
+    "Outreach OK?": {
+      "main": [
+        [{ "node": "4 Submit Form", "type": "main", "index": 0 }],
+        [{ "node": "Skipped", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "tags": []
+}

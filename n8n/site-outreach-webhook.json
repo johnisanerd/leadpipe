@@ -1,0 +1,126 @@
+{
+  "name": "Playwright SCR - Site Outreach (Webhook)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "outreach-pipeline",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "outreach-pipeline"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg1",
+              "name": "api_base",
+              "value": "http://host.docker.internal:8000",
+              "type": "string"
+            },
+            {
+              "id": "cfg2",
+              "name": "offer_description",
+              "value": "Помогаем стоматологиям получать больше заявок через SEO и контекстную рекламу.",
+              "type": "string"
+            },
+            {
+              "id": "cfg3",
+              "name": "sender_name",
+              "value": "Иван Петров",
+              "type": "string"
+            },
+            {
+              "id": "cfg4",
+              "name": "sender_company",
+              "value": "Dental Marketing",
+              "type": "string"
+            },
+            {
+              "id": "cfg5",
+              "name": "sender_phone",
+              "value": "+7 (999) 123-45-67",
+              "type": "string"
+            },
+            {
+              "id": "cfg6",
+              "name": "sender_email",
+              "value": "ivan@example.com",
+              "type": "string"
+            },
+            {
+              "id": "cfg7",
+              "name": "dry_run_submit",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {
+          "includeOtherFields": true
+        }
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').item.json.api_base }}/pipeline/site/{{ $('Webhook').item.json.body.site_id }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"offer_description\": {{ JSON.stringify($('Webhook').item.json.body.offer_description || $('Config').item.json.offer_description) }},\n  \"sender_name\": {{ JSON.stringify($('Webhook').item.json.body.sender_name || $('Config').item.json.sender_name) }},\n  \"sender_company\": {{ JSON.stringify($('Webhook').item.json.body.sender_company || $('Config').item.json.sender_company) }},\n  \"sender_phone\": {{ JSON.stringify($('Webhook').item.json.body.sender_phone || $('Config').item.json.sender_phone) }},\n  \"sender_email\": {{ JSON.stringify($('Webhook').item.json.body.sender_email || $('Config').item.json.sender_email) }},\n  \"dry_run_submit\": {{ $('Webhook').item.json.body.dry_run_submit ?? $('Config').item.json.dry_run_submit }},\n  \"headless\": true,\n  \"skip_enrich_if_done\": true,\n  \"auto_qualify\": true,\n  \"skip_unqualified\": true\n}",
+        "options": {
+          "timeout": 600000
+        }
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Run Pipeline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Run Pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
