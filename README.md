@@ -230,22 +230,9 @@ POST /outreach/submit/site/{site_id}
 
 ## n8n
 
-Готовые workflow в `n8n/` — импорт **Import from File**:
+Главный workflow: **`n8n/unified-pipeline.json`** — Manual · Schedule · Webhook, три режима запуска, Google Sheets.
 
-| Файл | Запуск |
-|------|--------|
-| `batch-outreach-pipeline.json` | Manual / **Schedule Trigger** (cron) |
-| `site-outreach-webhook.json` | `POST` на webhook URL n8n |
-| `site-outreach-steps.json` | Пошаговая отладка |
-
-```
-Schedule → Config (параметры) → POST /pipeline/batch
-```
-
-В ноде **Config**: `api_base`, город, оффер, отправитель, `dry_run_submit`.  
-n8n в Docker + API на хосте: `http://host.docker.internal:8000`
-
-Подробнее: [`n8n/README.md`](n8n/README.md)
+Legacy-файлы в `n8n/` тоже можно импортировать. Подробнее: [`n8n/README.md`](n8n/README.md)
 
 ---
 

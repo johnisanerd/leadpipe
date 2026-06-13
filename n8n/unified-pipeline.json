@@ -1,0 +1,510 @@
+{
+  "name": "LeadPipe — Unified Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## LeadPipe — единый пайплайн\n\n**start_mode** в Config:\n- `full` — поиск + обработка N сайтов\n- `existing` — только лиды из БД (без поиска)\n- `single_site` — один site_id\n\n**Триггеры:** Manual · Schedule · Webhook `POST /leadpipe`\n\nWebhook body может переопределить любой параметр Config.\n\nGoogle Sheets: укажите `google_sheet_id` или оставьте пустым.",
+        "height": 340,
+        "width": 420
+      },
+      "id": "e1e2e3d4-0001-4000-8000-000000000001",
+      "name": "Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-320, 260]
+    },
+    {
+      "parameters": {},
+      "id": "e1e2e3d4-0002-4000-8000-000000000002",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "e1e2e3d4-0003-4000-8000-000000000003",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 120]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "leadpipe",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "e1e2e3d4-0004-4000-8000-000000000004",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 480],
+      "webhookId": "leadpipe-unified"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfg01",
+              "name": "api_base",
+              "value": "http://host.docker.internal:8000",
+              "type": "string"
+            },
+            {
+              "id": "cfg02",
+              "name": "start_mode",
+              "value": "existing",
+              "type": "string"
+            },
+            {
+              "id": "cfg03",
+              "name": "search_query",
+              "value": "стоматология",
+              "type": "string"
+            },
+            {
+              "id": "cfg04",
+              "name": "search_cities",
+              "value": "={{ [\"Казань\"] }}",
+              "type": "array"
+            },
+            {
+              "id": "cfg05",
+              "name": "search_max_pages",
+              "value": 1,
+              "type": "number"
+            },
+            {
+              "id": "cfg06",
+              "name": "sites_limit",
+              "value": 5,
+              "type": "number"
+            },
+            {
+              "id": "cfg07",
+              "name": "scrape_status",
+              "value": "pending",
+              "type": "string"
+            },
+            {
+              "id": "cfg08",
+              "name": "site_id",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "cfg09",
+              "name": "offer_description",
+              "value": "Помогаем стоматологиям получать больше заявок через SEO и контекстную рекламу.",
+              "type": "string"
+            },
+            {
+              "id": "cfg10",
+              "name": "sender_name",
+              "value": "Иван Петров",
+              "type": "string"
+            },
+            {
+              "id": "cfg11",
+              "name": "sender_company",
+              "value": "Dental Marketing",
+              "type": "string"
+            },
+            {
+              "id": "cfg12",
+              "name": "sender_phone",
+              "value": "+7 (999) 123-45-67",
+              "type": "string"
+            },
+            {
+              "id": "cfg13",
+              "name": "sender_email",
+              "value": "ivan@example.com",
+              "type": "string"
+            },
+            {
+              "id": "cfg14",
+              "name": "dry_run_submit",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "cfg15",
+              "name": "headless",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "cfg16",
+              "name": "skip_enrich_if_done",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "cfg17",
+              "name": "auto_qualify",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "cfg18",
+              "name": "skip_unqualified",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "cfg19",
+              "name": "target_query",
+              "value": "стоматология",
+              "type": "string"
+            },
+            {
+              "id": "cfg20",
+              "name": "target_description",
+              "value": "стоматологическая клиника",
+              "type": "string"
+            },
+            {
+              "id": "cfg21",
+              "name": "google_sheet_id",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "cfg22",
+              "name": "google_sheet_name",
+              "value": "Results",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "includeOtherFields": true
+        }
+      },
+      "id": "e1e2e3d4-0005-4000-8000-000000000005",
+      "name": "Default Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [280, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json;\nconst body = raw.body && typeof raw.body === 'object' ? raw.body : {};\n\nconst cfg = {\n  api_base: body.api_base || raw.api_base,\n  start_mode: body.start_mode || raw.start_mode || 'existing',\n  search_query: body.search_query ?? raw.search_query,\n  search_cities: body.search_cities || raw.search_cities,\n  search_max_pages: body.search_max_pages ?? raw.search_max_pages ?? 1,\n  sites_limit: body.sites_limit ?? raw.sites_limit ?? 5,\n  scrape_status: body.scrape_status || raw.scrape_status || 'pending',\n  site_id: body.site_id || raw.site_id || '',\n  offer_description: body.offer_description || raw.offer_description,\n  sender_name: body.sender_name || raw.sender_name,\n  sender_company: body.sender_company || raw.sender_company,\n  sender_phone: body.sender_phone || raw.sender_phone,\n  sender_email: body.sender_email || raw.sender_email,\n  dry_run_submit: body.dry_run_submit ?? raw.dry_run_submit ?? true,\n  headless: body.headless ?? raw.headless ?? true,\n  skip_enrich_if_done: body.skip_enrich_if_done ?? raw.skip_enrich_if_done ?? true,\n  auto_qualify: body.auto_qualify ?? raw.auto_qualify ?? true,\n  skip_unqualified: body.skip_unqualified ?? raw.skip_unqualified ?? true,\n  target_query: body.target_query || raw.target_query,\n  target_description: body.target_description || raw.target_description,\n  google_sheet_id: body.google_sheet_id || raw.google_sheet_id || '',\n  google_sheet_name: body.google_sheet_name || raw.google_sheet_name || 'Results',\n};\n\ncfg.trigger_type = Object.keys(body).length ? 'webhook' : (raw.trigger_type || 'manual');\n\nif (cfg.start_mode === 'single_site' && !cfg.site_id) {\n  throw new Error('start_mode=single_site требует site_id (Config или webhook body)');\n}\n\nif (cfg.start_mode === 'full' && (!cfg.search_query || !cfg.search_cities?.length)) {\n  throw new Error('start_mode=full требует search_query и search_cities');\n}\n\nreturn [{ json: cfg }];"
+      },
+      "id": "e1e2e3d4-0006-4000-8000-000000000006",
+      "name": "Prepare Run",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const j = $input.first().json;\n\nconst pipelineBody = {\n  offer_description: j.offer_description,\n  sender_name: j.sender_name,\n  sender_company: j.sender_company,\n  sender_phone: j.sender_phone,\n  sender_email: j.sender_email,\n  dry_run_submit: j.dry_run_submit,\n  headless: j.headless,\n  skip_enrich_if_done: j.skip_enrich_if_done,\n  auto_qualify: j.auto_qualify,\n  skip_unqualified: j.skip_unqualified,\n  target_query: j.target_query,\n  target_description: j.target_description,\n};\n\nif (j.start_mode === 'single_site') {\n  return [{\n    json: {\n      ...j,\n      request_url: `${j.api_base}/pipeline/site/${j.site_id}`,\n      request_body: pipelineBody,\n    },\n  }];\n}\n\nconst batchBody = {\n  ...pipelineBody,\n  sites_limit: j.sites_limit,\n  scrape_status: j.scrape_status,\n};\n\nif (j.start_mode === 'full') {\n  batchBody.search_query = j.search_query;\n  batchBody.search_cities = j.search_cities;\n  batchBody.search_max_pages = j.search_max_pages;\n}\n\nreturn [{\n  json: {\n    ...j,\n    request_url: `${j.api_base}/pipeline/batch`,\n    request_body: batchBody,\n  },\n}];"
+      },
+      "id": "e1e2e3d4-0007-4000-8000-000000000007",
+      "name": "Build Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.request_url }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.request_body) }}",
+        "options": {
+          "timeout": 3600000
+        }
+      },
+      "id": "e1e2e3d4-0008-4000-8000-000000000008",
+      "name": "Run Pipeline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $('Run Pipeline').first().json;\nconst cfg = $('Prepare Run').first().json;\nconst timestamp = new Date().toISOString();\n\nlet sites = [];\nif (Array.isArray(response)) {\n  sites = response;\n} else if (response && response.site_id) {\n  sites = [response];\n} else {\n  throw new Error('Неожиданный ответ API: ' + JSON.stringify(response).slice(0, 500));\n}\n\nconst stepStatus = (steps, name) => {\n  const found = (steps || []).find((s) => s.step === name);\n  return found ? found.status : '';\n};\n\nreturn sites.map((site) => {\n  const steps = site.steps || [];\n  const submitDetail = site.submit && typeof site.submit === 'object' ? site.submit : {};\n\n  return {\n    json: {\n      run_at: timestamp,\n      trigger: cfg.trigger_type,\n      start_mode: cfg.start_mode,\n      site_id: site.site_id,\n      domain: site.domain,\n      pipeline_status: site.status,\n      enrich_status: stepStatus(steps, 'enrich'),\n      forms_status: stepStatus(steps, 'forms'),\n      outreach_status: stepStatus(steps, 'outreach'),\n      submit_status: stepStatus(steps, 'submit'),\n      outreach_id: site.outreach_id || '',\n      submitted: submitDetail.submitted ?? false,\n      dry_run: submitDetail.dry_run ?? true,\n      fields_filled: submitDetail.fields_filled ?? 0,\n      sent_status: '',\n      message_subject: '',\n      message_text: '',\n      llm_fit_score: '',\n      llm_is_fit: '',\n      error_message: site.error_message || '',\n    },\n  };\n});"
+      },
+      "id": "e1e2e3d4-0009-4000-8000-000000000009",
+      "name": "Format Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Prepare Run').item.json.api_base }}/outreach",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "={{ Math.max($('Prepare Run').item.json.sites_limit, 50) }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "e1e2e3d4-0010-4000-8000-000000000010",
+      "name": "Fetch Outreach Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1480, 300],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $('Format Results').all();\nconst outreach = $('Fetch Outreach Details').first().json.items || [];\nconst bySite = Object.fromEntries(outreach.map((o) => [o.site_id, o]));\n\nreturn rows.map((item) => {\n  const o = bySite[item.json.site_id];\n  if (o) {\n    item.json.sent_status = o.sent_status || '';\n    item.json.message_subject = o.message_subject || '';\n    item.json.message_text = (o.message_text || '').slice(0, 1000);\n    item.json.llm_fit_score = o.llm_fit_score ?? '';\n    item.json.llm_is_fit = o.llm_is_fit ?? '';\n  }\n  return item;\n});"
+      },
+      "id": "e1e2e3d4-0011-4000-8000-000000000011",
+      "name": "Merge Outreach",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1720, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "sheet1",
+              "leftValue": "={{ $('Prepare Run').item.json.google_sheet_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e1e2e3d4-0012-4000-8000-000000000012",
+      "name": "Sheets Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1960, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $('Prepare Run').item.json.google_sheet_id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $('Prepare Run').item.json.google_sheet_name }}",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "e1e2e3d4-0013-4000-8000-000000000013",
+      "name": "Google Sheets Append",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2200, 180],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CONFIGURE_IN_N8N",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "sum1",
+              "name": "summary",
+              "value": "={{ 'Обработано сайтов: ' + $input.all().length + '. Google Sheets отключен (google_sheet_id пуст).' }}",
+              "type": "string"
+            },
+            {
+              "id": "sum2",
+              "name": "results",
+              "value": "={{ $input.all().map(i => i.json) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e1e2e3d4-0014-4000-8000-000000000014",
+      "name": "Skip Sheets Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [2200, 420]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Default Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Default Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Default Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Config": {
+      "main": [
+        [
+          {
+            "node": "Prepare Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Run": {
+      "main": [
+        [
+          {
+            "node": "Build Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Request": {
+      "main": [
+        [
+          {
+            "node": "Run Pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Pipeline": {
+      "main": [
+        [
+          {
+            "node": "Format Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Results": {
+      "main": [
+        [
+          {
+            "node": "Fetch Outreach Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Outreach Details": {
+      "main": [
+        [
+          {
+            "node": "Merge Outreach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Outreach": {
+      "main": [
+        [
+          {
+            "node": "Sheets Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheets Enabled?": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets Append",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Sheets Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

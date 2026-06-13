@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+browser_profile/
+.git/
+debug_google.html

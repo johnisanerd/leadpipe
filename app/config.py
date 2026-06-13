@@ -8,9 +8,9 @@ load_dotenv(BASE_DIR / ".env")
 
 BROWSER_PROFILE_DIR = BASE_DIR / "browser_profile"
 
-# Playwright
+# Playwright (BROWSER_CHANNEL=chrome локально; в Docker оставьте пустым — bundled Chromium)
 HEADLESS = False
-BROWSER_CHANNEL = "chrome"
+BROWSER_CHANNEL = os.getenv("BROWSER_CHANNEL", "chrome").strip()
 NAVIGATION_TIMEOUT_MS = 30_000
 ACTION_DELAY_MS = 800
 CAPTCHA_WAIT_MS = 120_000
